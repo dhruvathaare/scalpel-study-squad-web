@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Scalpel Study Squad | Web</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
+    <style>
+        :root { --bg: #0e1621; --card: #17212b; --text: #ffffff; --border: #2b5278; --accent: #5288c1; --input-bg: #0e1621; }
+        html, body { height: 100%; margin: 0; padding: 0; background: var(--bg); color: var(--text); }
+        body { display: flex; flex-direction: column; align-items: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; box-sizing: border-box; overflow-y: auto; min-height: 100vh; }
+        .container { width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        #auth-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:3000; display:flex; justify-content:center; align-items:center; }
+        .auth-card { background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--accent); width: 85%; max-width: 320px; text-align: center; }
+        .header-ui { width: 100%; display: flex; justify-content: flex-end; margin-bottom: 10px; }
+        .user-badge { background: rgba(82, 136, 193, 0.2); border: 1px solid var(--accent); padding: 8px 12px; border-radius: 15px; font-size: 11px; color: var(--accent); font-weight: bold; text-align: right; line-height: 1.3; }
+        .logo { width: 85px; height: 85px; border-radius: 50%; border: 4px solid var(--accent); margin-bottom: 10px; box-shadow: 0 0 15px rgba(82,136,193,0.3); }
+        h1 { color: var(--accent); font-size: 22px; margin: 5px 0; font-weight: bold; text-transform: uppercase; }
+        .streak-text { font-size: 18px; font-weight: bold; color: #f39c12; }
+        .quote { font-family: 'Oswald', sans-serif; color: #ef5350; font-weight: 700; font-size: 11px; text-transform: uppercase; margin: 10px 0; line-height: 1.2; }
+        .nav-tabs { display: flex; width: 100%; background: var(--card); border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); overflow: hidden; }
+        .tab-btn { flex: 1; padding: 12px 2px; font-size: 9px; font-weight: bold; cursor: pointer; border: none; background: none; color: white; opacity: 0.5; }
+        .tab-btn.active { opacity: 1; background: var(--accent); }
+        .tab-content { width: 100%; display: none; }
+        .tab-content.active { display: block; }
+        .card { background: var(--card); padding: 12px; border-radius: 20px; border: 1px solid var(--border); width: 100%; box-sizing: border-box; margin-bottom: 15px; }
+        .setting-label { font-size: 9px; color: #888; text-transform: uppercase; margin: 6px 0 2px 0; display: block; font-weight: bold; text-align: left; }
+        .sub-label { font-size: 8px; color: #5288c1; text-transform: uppercase; margin-top: 2px; font-weight: bold; text-align: center;}
+        input, select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); text-align: center; font-size: 13px; box-sizing: border-box; }
+        input[type="date"] { color-scheme: dark; }
+        #timer-display { font-size: 52px; font-weight: bold; margin: 5px 0; font-variant-numeric: tabular-nums; }
+        .btn { background: #2481cc; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; font-size: 14px; }
+        .log-table { width: 100%; font-size: 10px; text-align: left; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+        .log-table th, .log-table td { padding: 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .col-date { width: 23%; } .col-hrs { width: 15%; } .col-cyc { width: 12%; } .col-mcq { width: 15%; } .col-sub { width: 35%; }
+        .calc-preview { background: rgba(82, 136, 193, 0.1); padding: 8px; border-radius: 10px; margin-top: 8px; font-size: 11px; border: 1px dashed var(--accent); display: flex; justify-content: space-around; align-items: center; }
+        .chart-container { width: 100%; height: 160px; margin: 10px 0; }
+        #popup-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.96); z-index:2000; justify-content:center; align-items:center; flex-direction: column;}
+        .popup-card { background: var(--card); padding: 25px; border-radius: 20px; border: 2px solid var(--accent); width: 85%; max-width: 320px; text-align: center; }
+        .tg-join-box { background: linear-gradient(135deg, #2481cc, #1d6fa5); padding: 25px; border-radius: 20px; color: white; }
+    </style>
+</head>
+<body>
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <img src="https://github.com/dhruvathaare/Scaslpel-Study-Squad-Apps/blob/main/photo_2026-02-12_20-08-36.jpg?raw=true" style="width:70px; border-radius:50%; margin-bottom:15px; border: 2px solid var(--accent);">
+            <h2 style="color:var(--accent); margin:0 0 15px 0;">Squad Vault</h2>
+            <input type="text" id="webUser" placeholder="Username" style="margin-bottom:10px;">
+            <input type="password" id="webPin" placeholder="4-Digit PIN" maxlength="4" inputmode="numeric">
+            <button class="btn" style="width:100%; margin-top:20px;" onclick="initWebVault()">Enter Dashboard</button>
+        </div>
+    </div>
+
+    <div id="main-app" style="display:none;" class="container">
+        <div class="header-ui"><div class="user-badge" onclick="location.reload()" style="cursor:pointer;"><span id="displayUserName">User</span><span style="opacity: 0.6; font-size: 9px;">Vault Locked 🔒</span></div></div>
+        <img src="https://github.com/dhruvathaare/Scaslpel-Study-Squad-Apps/blob/main/photo_2026-02-12_20-08-36.jpg?raw=true" class="logo">
+        <h1>Scalpel Study Squad</h1>
+        <div class="streak-section">
+            <div id="streakText" class="streak-text">Consistency: 0 Days</div>
+            <div id="streakIcons" style="font-size:24px; margin:5px 0;"></div>
+            <div style="font-size:9px; color:#888;">🔥 per 25 days | 🥇 per 75 days</div>
+        </div>
+        <div class="quote">"I AM HERE TO WIN, CONSISTENCY IS MY KITH AND KIN"</div>
+        <div class="nav-tabs">
+            <div class="tab-btn active" onclick="switchTab('tab-daily', this)">Daily Tracker</div>
+            <div class="tab-btn" onclick="switchTab('tab-swt', this)">SWT Analysis</div>
+            <div class="tab-btn" onclick="switchTab('tab-gt', this)">GT Analysis</div>
+            <div class="tab-btn" onclick="switchTab('tab-tg', this)">Join Telegram Group</div>
+        </div>
+
+        <div id="tab-daily" class="tab-content active">
+            <div class="card">
+                <span class="setting-label">Subject</span>
+                <select id="subject"><option value="" disabled selected>Select Subject</option><option>Anatomy</option><option>Physiology</option><option>Biochemistry</option><option>Pathology</option><option>Microbiology</option><option>Pharmacology</option><option>FMT</option><option>PSM</option><option>Ophthalmology</option><option>ENT</option><option>Medicine</option><option>Surgery</option><option>OBG</option><option>Pediatrics</option><option>Anaesthesia</option><option>Dermatology</option><option>Orthopedics</option><option>Psychiatry</option><option>Radiology</option><option>Mixed Bag</option><option>Integrated Systems</option></select>
+                <div style="display:flex; gap:10px; margin-top:8px;">
+                    <div style="flex:2;"><span class="setting-label" style="text-align:center;">Study Duration</span><div style="display:flex; gap:5px;">
+                    <div style="flex:1;"><input type="number" id="studyHr" value="2"><div class="sub-label">Hours</div></div>
+                    <div style="flex:1;"><input type="number" id="studyMin" value="0"><div class="sub-label">Minutes</div></div></div></div>
+                    <div style="flex:1;"><span class="setting-label" style="text-align:center;">Break</span><input type="number" id="breakTime" value="15"><div class="sub-label">Minutes</div></div>
+                </div>
+                <div id="timer-display">00:00:00</div>
+                <button id="startBtn" class="btn" style="width:100%;">Start Session</button>
+                <div id="timer-controls" style="display:none; width:100%;">
+                    <div style="display:flex; gap:8px;"><button id="pauseBtn" class="btn" style="background:#f39c12;flex:1;" onclick="togglePause()">Pause</button><button class="btn" style="background:#8e44ad;flex:1;" onclick="handleTransition()">Skip</button></div>
+                    <button class="btn" style="background:#ef5350; margin-top:12px; width:100%;" onclick="stopEntireSession()">End Session</button>
+                </div>
+            </div>
+            <div class="card"><h3 style="margin:0; color:#f39c12; font-size:16px;">Daily Progress</h3><div class="chart-container"><canvas id="hoursChart"></canvas></div><div class="chart-container"><canvas id="mcqChart"></canvas></div><table class="log-table"><thead><tr><th class="col-date">Date</th><th class="col-hrs">Hrs</th><th class="col-cyc">Cyc</th><th class="col-mcq">MCQ</th><th class="col-sub">Subjects</th></tr></thead><tbody id="dailyLogBody"></tbody></table></div>
+        </div>
+
+        <div id="tab-swt" class="tab-content">
+            <div class="card">
+                <h3>SWT Analysis</h3>
+                <div style="display:flex; gap:5px; margin-top:8px;"><div style="flex:1.5;"><span class="setting-label">Date</span><input type="date" id="swtDate"></div><div style="flex:1;"><span class="setting-label">Total Qs</span><input type="number" id="swtTotal" oninput="calcSWT()"></div></div>
+                <div style="display:flex; gap:5px; margin-top:5px;"><div style="flex:1;"><span class="setting-label">Correct</span><input type="number" id="swtCorrect" oninput="calcSWT()"></div><div style="flex:1;"><span class="setting-label">Unattempted</span><input type="number" id="swtUnat" oninput="calcSWT()"></div></div>
+                <button class="btn" onclick="saveSWT()" style="background:var(--accent); margin-top:10px; width:100%;">Save Result</button>
+                <div class="chart-container"><canvas id="swtChart"></canvas></div><div id="swtAnalysis" style="font-size:11px; text-align:left; line-height:1.5;"></div>
+            </div>
+        </div>
+
+        <div id="tab-gt" class="tab-content">
+            <div class="card">
+                <h3>GT Intelligence</h3>
+                <div style="display:flex; margin-bottom:10px;"><div class="gt-tab-btn active" id="tabNeet" style="flex:1; padding:10px; text-align:center; background:var(--border); font-size:10px; cursor:pointer;" onclick="switchGT('NEET')">NEET PG</div><div class="gt-tab-btn" id="tabInicet" style="flex:1; padding:10px; text-align:center; background:rgba(0,0,0,0.2); font-size:10px; cursor:pointer;" onclick="switchGT('INICET')">INICET</div></div>
+                <div style="display:flex; gap:5px;"><div style="flex:1.5;"><span class="setting-label">Date</span><input type="date" id="gtDate"></div><div style="flex:1;"><span class="setting-label">Correct</span><input type="number" id="gtCorrect" oninput="calcGT()"></div><div style="flex:1;"><span class="setting-label">Unattempted</span><input type="number" id="gtUnat" oninput="calcGT()"></div></div>
+                <button class="btn" onclick="saveGT()" style="background:#2ecc71; margin-top:10px; width:100%;">Save Result</button>
+                <div id="neet-area"><h4 style="color:#f39c12; margin-top:15px; font-size:13px;">NEET PG Progress</h4><div class="chart-container"><canvas id="gtNeetChart"></canvas></div><div id="gtNeetAnalysis" style="font-size:11px; text-align:left;"></div></div>
+                <div id="inicet-area" style="display:none;"><h4 style="color:#2ecc71; margin-top:15px; font-size:13px;">INICET Progress</h4><div class="chart-container"><canvas id="gtInicetChart"></canvas></div><div id="gtInicetAnalysis" style="font-size:11px; text-align:left;"></div></div>
+            </div>
+        </div>
+
+        <div id="tab-tg" class="tab-content">
+            <div class="card tg-join-box">
+                <h3 style="margin-top:0;">Secure Squad Access</h3>
+                <p style="font-size:12px; margin-bottom:20px;">Tap below to launch the Mini App and receive your temporary group invite link.</p>
+                <button class="btn" style="background:#ffffff; color:#2481cc;" onclick="window.open('http://t.me/Scalpel_Study_Squad_bot/ScalpelStudySquad', '_blank')">🚀 Open Mini App</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="popup-overlay">
+        <div class="popup-card" id="mcq-popup"><h3>Cycle Record</h3><p>MCQs solved:</p><input type="number" id="cycleMcqs" placeholder="0" style="width:100%;"><button class="btn" onclick="startBreak()" style="margin-top:15px; width:100%;">Save & Break</button></div>
+        <div class="popup-card" id="break-popup" style="display:none;"><h3>Break Over</h3><button class="btn" onclick="continueNextCycle()" style="background:#2ecc71; width:100%;">Start Next Cycle</button><button class="btn" onclick="stopEntireSession()" style="background:#ef5350; margin-top:10px; width:100%;">End Session</button></div>
+    </div>
+
+    <script>
+        let KEYS = {}; let timerInterval, activeSub = "", wakeLock = null, timeLeft = 0, mode = "idle", isPaused = false, currentGTMode = "NEET";
+        function initWebVault() {
+            const user = document.getElementById('webUser').value.trim(); const pin = document.getElementById('webPin').value.trim();
+            if(!user || pin.length !== 4) return alert("Enter Username & 4-Digit PIN");
+            const prefix = `SSS_WEB_V1_${user}_${pin}_`;
+            KEYS = { LOGS: prefix+'LOGS', NEET: prefix+'NEET', INI: prefix+'INI', SWT: prefix+'SWT' };
+            document.getElementById('displayUserName').innerText = user; document.getElementById('auth-overlay').style.display = 'none'; document.getElementById('main-app').style.display = 'block';
+            localStorage.setItem('SSS_WEB_LAST_USER', user); localStorage.setItem('SSS_WEB_LAST_PIN', pin); updateUI();
+        }
+        window.onload = () => { const savedU = localStorage.getItem('SSS_WEB_LAST_USER'); const savedP = localStorage.getItem('SSS_WEB_LAST_PIN'); if(savedU && savedP) { document.getElementById('webUser').value = savedU; document.getElementById('webPin').value = savedP; } };
+        const requestWakeLock = async () => { if ('wakeLock' in navigator) try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {} };
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playBeep(f, d) { const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = f; g.gain.value = 0.1; o.start(); setTimeout(() => o.stop(), d); }
+        let alarmInterval = null;
+        function startAlarm(f) { stopAlarm(); alarmInterval = setInterval(() => playBeep(f, 200), 1000); }
+        function stopAlarm() { if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; } }
+        function switchTab(id, btn) { document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.style.background = 'none'; }); btn.classList.add('active'); btn.style.background = 'var(--accent)'; document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(id).classList.add('active'); updateUI(); }
+        document.getElementById('startBtn').onclick = () => { if (!document.getElementById('subject').value) return alert("Select Subject!"); audioCtx.resume(); requestWakeLock(); activeSub = document.getElementById('subject').value; startStudyTimer(); };
+        function startStudyTimer() { mode = "study"; isPaused = false; timeLeft = (parseInt(document.getElementById('studyHr').value)*3600) + (parseInt(document.getElementById('studyMin').value)*60); if(timeLeft <= 0) return; document.getElementById('startBtn').style.display='none'; document.getElementById('timer-controls').style.display='block'; runTimer(); }
+        function togglePause() { isPaused = !isPaused; document.getElementById('pauseBtn').innerText = isPaused ? "Resume" : "Pause"; }
+        function runTimer() { clearInterval(timerInterval); timerInterval = setInterval(() => { if (!isPaused) { timeLeft--; let h=Math.floor(timeLeft/3600), m=Math.floor((timeLeft%3600)/60), s=timeLeft%60; document.getElementById('timer-display').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; if (timeLeft<=0) handleTransition(); } }, 1000); }
+        function handleTransition() { clearInterval(timerInterval); startAlarm(mode==="study"?880:440); document.getElementById('popup-overlay').style.display='flex'; document.getElementById('mcq-popup').style.display=mode==="study"?'block':'none'; document.getElementById('break-popup').style.display=mode==="study"?'none':'block'; }
+        function startBreak() { stopAlarm(); const m = parseInt(document.getElementById('cycleMcqs').value)||0; saveStudyLog(activeSub, m, (parseInt(document.getElementById('studyHr').value)*60)+parseInt(document.getElementById('studyMin').value)); document.getElementById('cycleMcqs').value=''; document.getElementById('popup-overlay').style.display='none'; mode="break"; isPaused=false; timeLeft=parseInt(document.getElementById('breakTime').value)*60; runTimer(); }
+        function continueNextCycle() { stopAlarm(); document.getElementById('popup-overlay').style.display = 'none'; startStudyTimer(); }
+        function stopEntireSession() { stopAlarm(); clearInterval(timerInterval); if (wakeLock) { wakeLock.release(); wakeLock=null; } document.getElementById('popup-overlay').style.display='none'; document.getElementById('timer-display').innerText="00:00:00"; document.getElementById('startBtn').style.display='block'; document.getElementById('timer-controls').style.display='none'; mode="idle"; updateUI(); }
+        function saveStudyLog(s, m, d) { const logs = JSON.parse(localStorage.getItem(KEYS.LOGS)||"[]"); logs.unshift({ date: new Date().toLocaleDateString('en-GB'), subject: s, mcqs: m, duration: d }); localStorage.setItem(KEYS.LOGS, JSON.stringify(logs)); }
+        function updateUI() { if(!KEYS.LOGS) return; const ist = new Date(new Date().getTime() + 330 * 60 * 1000).toISOString().split('T')[0]; renderData(); renderSWT(); renderGT(); updateConsistency(); }
+        function updateConsistency() { const logs = JSON.parse(localStorage.getItem(KEYS.LOGS)||"[]"); const unique = new Set(logs.map(l => l.date)).size; document.getElementById('streakText').innerText = `Consistency: ${unique} Days`; const medals = Math.floor(unique / 75), fires = Math.floor((unique % 75) / 25); document.getElementById('streakIcons').innerText = "🥇".repeat(medals) + "🔥".repeat(fires); }
+        function calcSWT() { const t=parseInt(document.getElementById('swtTotal').value)||0, c=parseInt(document.getElementById('swtCorrect').value)||0, u=parseInt(document.getElementById('swtUnat').value)||0; document.getElementById('swtW').innerText=Math.max(0, t-c-u); }
+        function calcGT() { const c=parseInt(document.getElementById('gtCorrect').value)||0, u=parseInt(document.getElementById('gtUnat').value)||0; const w = Math.max(0, 200 - c - u); const s = (currentGTMode === 'NEET') ? (c * 4 - w) : (c - (w * 0.333)); document.getElementById('gtW').innerText = w; document.getElementById('gtS').innerText = s.toFixed(currentGTMode==='NEET'?0:2); }
+        function saveSWT() { const d=document.getElementById('swtDate').value, t=parseInt(document.getElementById('swtTotal').value), c=parseInt(document.getElementById('swtCorrect').value), u=parseInt(document.getElementById('swtUnat').value), sub=document.getElementById('swtSubject').value; if(!d || isNaN(t)) return; const data = JSON.parse(localStorage.getItem(KEYS.SWT)||"[]"); data.push({ date: d, total: t, correct: c, unat: u, wrong: Math.max(0, t-c-u), percent: ((c/t)*100).toFixed(1), subject: sub }); data.sort((a,b)=>new Date(a.date)-new Date(b.date)); localStorage.setItem(KEYS.SWT, JSON.stringify(data)); updateUI(); }
+        function saveGT() { const d=document.getElementById('gtDate').value, c=parseInt(document.getElementById('gtCorrect').value), u=parseInt(document.getElementById('gtUnat').value); if(!d) return; const w = Math.max(0, 200 - c - u); const score = parseFloat(((currentGTMode === 'NEET') ? (c * 4 - w) : (c - (w * 0.333))).toFixed(2)); const data = JSON.parse(localStorage.getItem(currentGTMode === 'NEET' ? KEYS.NEET : KEYS.INI)||"[]"); data.push({ date: d, score, correct: c, unat: u, wrong: w }); data.sort((a,b)=>new Date(a.date)-new Date(b.date)); localStorage.setItem(currentGTMode === 'NEET' ? KEYS.NEET : KEYS.INI, JSON.stringify(data)); updateUI(); }
+        function switchGT(m) { currentGTMode = m; document.querySelectorAll('.gt-tab-btn').forEach(b => b.style.background = 'rgba(0,0,0,0.2)'); document.getElementById(m==='NEET'?'tabNeet':'tabInicet').style.background = 'var(--border)'; document.getElementById('gtNeetChart').style.display = m==='NEET'?'block':'none'; document.getElementById('gtInicetChart').style.display = m==='INICET'?'block':'none'; renderGT(); }
+        let hChart, mChart, gNeetChart, gIniChart, sChart;
+        function renderData() { const logs = JSON.parse(localStorage.getItem(KEYS.LOGS)||"[]"); const grouped = {}; logs.forEach(l => { if (!grouped[l.date]) grouped[l.date] = {h:0, m:0, subs:new Set(), cyc:0}; grouped[l.date].h += l.duration/60; grouped[l.date].m += l.mcqs; grouped[l.date].subs.add(l.subject); grouped[l.date].cyc++; }); const labels = Object.keys(grouped).reverse().slice(-7); const hours = labels.map(l => grouped[l].h), mcqs = labels.map(l => grouped[l].m); const avgH = hours.length ? (hours.reduce((a,b)=>a+b,0)/hours.length).toFixed(1) : 0; const avgM = mcqs.length ? Math.round(mcqs.reduce((a,b)=>a+b,0)/mcqs.length) : 0; if(hChart) hChart.destroy(); hChart = new Chart(document.getElementById('hoursChart'), { type:'line', data:{labels, datasets:[{label:'Hours', data:hours, borderColor:'#f39c12', tension:0.3}]}, options:{maintainAspectRatio:false, scales:{y:{ticks:{color:'#fff', callback:v=>v+'h'}}}, plugins:{annotation:{annotations:{l1:{type:'line', yMin:avgH, yMax:avgH, borderColor:'rgba(255,255,255,0.3)', borderDash:[5,5]}}}}}}); if(mChart) mChart.destroy(); mChart = new Chart(document.getElementById('mcqChart'), { type:'line', data:{labels, datasets:[{label:'MCQs', data:mcqs, borderColor:'#5288c1', tension:0.3}]}, options:{maintainAspectRatio:false, scales:{y:{ticks:{color:'#fff', stepSize:1}}}, plugins:{annotation:{annotations:{l1:{type:'line', yMin:avgM, yMax:avgM, borderColor:'rgba(255,255,255,0.3)', borderDash:[5,5]}}}}}}); let html = ""; Object.keys(grouped).reverse().forEach(d => { html += `<tr><td>${d}</td><td>${grouped[d].h.toFixed(1)}h</td><td>${grouped[d].cyc}</td><td>${grouped[d].m}</td><td>${Array.from(grouped[d].subs).join(', ')}</td></tr>`; }); document.getElementById('dailyLogBody').innerHTML = html; }
+        function renderSWT() { const sub = document.getElementById('swtSubject').value; const swts = JSON.parse(localStorage.getItem(KEYS.SWT)||"[]").filter(x => x.subject === sub); if(sChart) sChart.destroy(); if(swts.length === 0) { document.getElementById('swtAnalysis').innerHTML = ""; return; } sChart = new Chart(document.getElementById('swtChart'), { type:'line', data:{labels:swts.map(x=>x.date), datasets:[{label:sub+'%', data:swts.map(x=>x.percent), borderColor:'#5288c1', tension:0.3}]}, options:{maintainAspectRatio:false, scales:{y:{min:0, max:100, ticks:{color:'#fff'}}}}}); document.getElementById('swtAnalysis').innerHTML = swts.map(x => `• ${x.date}: <b>${x.percent}%</b> (C:${x.correct} W:${x.wrong} U:${x.unat})`).reverse().join('<br>'); }
+        function renderGT() { const nd = JSON.parse(localStorage.getItem(KEYS.NEET)||"[]"), id = JSON.parse(localStorage.getItem(KEYS.INI)||"[]"); if(gNeetChart) gNeetChart.destroy(); if(nd.length > 0) { gNeetChart = new Chart(document.getElementById('gtNeetChart'), { type:'line', data:{labels:nd.map(x=>x.date), datasets:[{label:'NEET', data:nd.map(x=>x.score), borderColor:'#f39c12', tension:0.3}]}, options:{maintainAspectRatio:false, scales:{y:{min:0, max:800, ticks:{color:'#fff'}}}}}); } if(gIniChart) gIniChart.destroy(); if(id.length > 0) { gIniChart = new Chart(document.getElementById('gtInicetChart'), { type:'line', data:{labels:id.map(x=>x.date), datasets:[{label:'INICET', data:id.map(x=>x.score), borderColor:'#2ecc71', tension:0.3}]}, options:{maintainAspectRatio:false, scales:{y:{min:0, max:200, ticks:{color:'#fff'}}}}}); } const data = currentGTMode === 'NEET' ? nd : id; document.getElementById('gtNeetAnalysis').innerHTML = data.map(x => `• ${x.date}: <b>Score:${x.score}</b> (C:${x.correct} W:${x.wrong} U:${x.unat})`).reverse().join('<br>'); }
+    </script>
+</body>
+</html>
+
