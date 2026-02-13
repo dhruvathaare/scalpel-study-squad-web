@@ -1,133 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Scalpel Master Standard | Web</title>
-    <link rel="manifest" href="manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
-    <style>
-        :root { --bg: #0e1621; --card: #17212b; --text: #ffffff; --border: #2b5278; --accent: #5288c1; --input-bg: #0e1621; }
-        html, body { height: 100%; margin: 0; padding: 0; background: var(--bg); color: var(--text); }
-        body { display: flex; flex-direction: column; align-items: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; box-sizing: border-box; overflow-y: auto; min-height: 100vh; }
-        .container { width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-        #auth-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:3000; display:flex; justify-content:center; align-items:center; }
-        .auth-card { background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--accent); width: 85%; max-width: 320px; text-align: center; }
-        .header-ui { width: 100%; display: flex; justify-content: flex-end; margin-bottom: 10px; }
-        .user-badge { background: rgba(82, 136, 193, 0.2); border: 1px solid var(--accent); padding: 8px 12px; border-radius: 15px; font-size: 11px; color: var(--accent); font-weight: bold; text-align: right; line-height: 1.3; cursor: pointer; }
-        .logo { width: 85px; height: 85px; border-radius: 50%; border: 4px solid var(--accent); margin-bottom: 10px; box-shadow: 0 0 15px rgba(82,136,193,0.3); }
-        h1 { color: var(--accent); font-size: 22px; margin: 5px 0; font-weight: bold; text-transform: uppercase; }
-        .streak-text { font-size: 18px; font-weight: bold; color: #f39c12; }
-        .quote { font-family: 'Oswald', sans-serif; color: #ef5350; font-weight: 700; font-size: 11px; text-transform: uppercase; margin: 10px 0; line-height: 1.2; }
-        .nav-tabs { display: flex; width: 100%; background: var(--card); border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); overflow: hidden; }
-        .tab-btn { flex: 1; padding: 12px 2px; font-size: 9px; font-weight: bold; cursor: pointer; border: none; background: none; color: white; opacity: 0.5; }
-        .tab-btn.active { opacity: 1; background: var(--accent); }
-        .tab-content { width: 100%; display: none; }
-        .tab-content.active { display: block; }
-        .card { background: var(--card); padding: 12px; border-radius: 20px; border: 1px solid var(--border); width: 100%; box-sizing: border-box; margin-bottom: 15px; }
-        .setting-label { font-size: 9px; color: #888; text-transform: uppercase; margin: 6px 0 2px 0; display: block; font-weight: bold; text-align: left; }
-        input, select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); text-align: center; font-size: 13px; box-sizing: border-box; }
-        .btn { background: #2481cc; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; font-size: 14px; }
-        .log-table { width: 100%; font-size: 10px; text-align: left; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
-        .log-table th, .log-table td { padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .chart-container { width: 100%; height: 160px; margin: 10px 0; }
-        #popup-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.96); z-index:2000; justify-content:center; align-items:center; flex-direction: column;}
-        .popup-card { background: var(--card); padding: 25px; border-radius: 20px; border: 2px solid var(--accent); width: 85%; max-width: 320px; text-align: center; }
-        .tg-box { background: linear-gradient(135deg, #2481cc, #1d6fa5); padding: 20px; border-radius: 15px; color: white; margin-bottom: 15px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scalpel Study Squad</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap" rel="stylesheet">
+
+<!-- ================= THEME STYLES ================= -->
+<style>
+/* ---------- THEME VARIABLES ---------- */
+:root {
+  --bg: #0e1621;
+  --card: #17212b;
+  --text: #ffffff;
+  --border: #2b5278;
+  --accent: #5288c1;
+}
+
+[data-theme="light"] {
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --text: #111111;
+  --border: #d0d7de;
+  --accent: #1f6feb;
+}
+
+/* ---------- BASE ---------- */
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.center {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 25px;
+  width: 100%;
+  max-width: 340px;
+  box-sizing: border-box;
+}
+
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+
+button {
+  background: var(--accent);
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+}
+
+.small {
+  font-size: 11px;
+  color: gray;
+  text-align: center;
+  margin-top: 8px;
+}
+</style>
+
+<!-- ============== CLOUD READY (NOT ACTIVE YET) ============== -->
+<script type="module">
+  /*
+    Firebase will be enabled later.
+    This is ONLY to make the app cloud-ready.
+    Do not touch for now.
+  */
+  window.CLOUD_READY = true;
+</script>
 </head>
-<body>
-    <div id="auth-overlay">
-        <div class="auth-card">
-            <img src="https://raw.githubusercontent.com/dhruvathaare/Scaslpel-Study-Squad-Apps/main/photo_2026-02-12_20-08-36.jpg" style="width:70px; border-radius:50%; margin-bottom:15px; border: 2px solid var(--accent);">
-            <h2 style="color:var(--accent); margin:0 0 15px 0;">Squad Vault</h2>
-            <input type="text" id="webUser" placeholder="Username" style="margin-bottom:10px;">
-            <input type="password" id="webPin" placeholder="4-Digit PIN" maxlength="4" inputmode="numeric">
-            <button class="btn" onclick="initWebVault()">Enter Dashboard</button>
-        </div>
-    </div>
 
-    <div id="popup-overlay">
-        <div class="popup-card" id="mcq-popup">
-            <h3>Cycle Complete</h3>
-            <p>Enter MCQs solved:</p>
-            <input type="number" id="cycleMcqs" placeholder="0" style="width:100%;">
-            <button class="btn" onclick="startBreak()" style="margin-top:15px; width:100%;">Record & Start Break</button>
-        </div>
-        <div class="popup-card" id="break-popup" style="display:none;">
-            <h3>Break Finished!</h3>
-            <button class="btn" onclick="continueNextCycle()" style="background:#2ecc71; width:100%;">Start Next Cycle</button>
-            <button class="btn" onclick="stopEntireSession()" style="background:#ef5350; margin-top:10px; width:100%;">End Session</button>
-        </div>
-    </div>
+<body data-theme="dark">
 
-    <div id="main-app" style="display:none;" class="container">
-        <div class="header-ui">
-            <div class="user-badge" onclick="location.reload()">
-                <span id="uFullName">...</span>
-                <span id="uID" style="opacity: 0.7; font-size: 9px;">Vault Locked 🔒</span>
-            </div>
-        </div>
-        <img src="https://raw.githubusercontent.com/dhruvathaare/Scaslpel-Study-Squad-Apps/main/photo_2026-02-12_20-08-36.jpg" class="logo">
-        <h1>Scalpel Study Squad</h1>
-        <div id="streakText" class="streak-text">Consistency: 0 Days</div>
-        <div id="streakIcons" style="font-size:24px; margin:5px 0;"></div>
-        <div class="quote">"I AM HERE TO WIN, CONSISTENCY IS MY KITH AND KIN"</div>
+<!-- ================= LOGIN SCREEN ================= -->
+<div id="loginScreen" class="center">
+  <div class="card" style="text-align:center">
+    <h2 style="color:var(--accent);margin-top:0">Scalpel Study Squad</h2>
 
-        <div class="nav-tabs">
-            <div class="tab-btn active" onclick="switchTab('tab-daily', this)">Daily Tracker</div>
-            <div class="tab-btn" onclick="switchTab('tab-swt', this)">SWT Analysis</div>
-            <div class="tab-btn" onclick="switchTab('tab-gt', this)">GT Analysis</div>
-            <div class="tab-btn" onclick="switchTab('tab-tg', this)">Telegram Group</div>
-        </div>
+    <input id="username" placeholder="Username">
+    <input id="pin" type="password" maxlength="4" placeholder="4-digit PIN">
 
-        <div id="tab-daily" class="tab-content active">
-            <div class="card">
-                <span class="setting-label">Subject</span>
-                <select id="subject"><option>Anatomy</option><option>Physiology</option><option>Biochemistry</option><option>Pathology</option><option>Pharmacology</option><option>Medicine</option><option>Surgery</option></select>
-                <div id="timer-display">00:00:00</div>
-                <button id="startBtn" class="btn">Start Session</button>
-            </div>
-            <div class="card">
-                <div class="chart-container"><canvas id="hoursChart"></canvas></div>
-                <table class="log-table">
-                    <thead><tr><th>Date</th><th>Hrs</th><th>MCQ</th><th>Sub</th></tr></thead>
-                    <tbody id="dailyLogBody"></tbody>
-                </table>
-            </div>
-        </div>
+    <button onclick="login()">Login / Register</button>
 
-        <div id="tab-tg" class="tab-content">
-            <div class="card tg-box">
-                <h3 style="margin-top:0;">Join Telegram Group</h3>
-                <button class="btn" style="background:white; color:#2481cc;" onclick="window.open('http://t.me/Scalpel_Study_Squad_bot/ScalpelStudySquad', '_blank')">🚀 Open Mini App</button>
-            </div>
-        </div>
-    </div>
+    <button class="secondary" onclick="toggleTheme()">Toggle Light / Dark</button>
 
-    <script>
-        let KEYS = {}; let timerInterval;
-        function initWebVault() {
-            const user = document.getElementById('webUser').value;
-            const pin = document.getElementById('webPin').value;
-            if(!user || pin.length !== 4) return alert("Enter Username & 4-Digit PIN");
-            KEYS = { LOGS: `SSS_WEB_${user}_${pin}_LOGS` };
-            document.getElementById('uFullName').innerText = user;
-            document.getElementById('auth-overlay').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-            updateUI();
-        }
-        function switchTab(id, btn) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            btn.classList.add('active');
-        }
-        function updateUI() { /* Original logic preserved */ }
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
-    </script>
+    <p class="small">New username = auto registration</p>
+  </div>
+</div>
+
+<!-- ================= APP SCREEN ================= -->
+<div id="appScreen" class="center" style="display:none">
+  <div class="card" style="text-align:center">
+    <h2 style="color:var(--accent);margin-top:0">Welcome</h2>
+    <p id="userLabel"></p>
+
+    <button onclick="toggleTheme()">Toggle Light / Dark</button>
+    <button style="background:#ef5350;margin-top:12px" onclick="logout()">Logout</button>
+
+    <p class="small">Cloud storage ready ✔</p>
+  </div>
+</div>
+
+<script>
+/* ================= THEME LOGIC ================= */
+const THEME_KEY = "SSS_THEME";
+
+function applyTheme(theme) {
+  document.body.setAttribute("data-theme", theme);
+  localStorage.setItem(THEME_KEY, theme);
+}
+
+function toggleTheme() {
+  const current = document.body.getAttribute("data-theme");
+  applyTheme(current === "dark" ? "light" : "dark");
+}
+
+// load saved theme
+applyTheme(localStorage.getItem(THEME_KEY) || "dark");
+
+/* ================= AUTH (LOCAL FOR NOW) ================= */
+const USERS_KEY = "SSS_USERS";
+const SESSION_KEY = "SSS_SESSION";
+
+function login() {
+  const u = username.value.trim();
+  const p = pin.value.trim();
+
+  if (!u || p.length !== 4 || isNaN(p)) {
+    alert("Enter username and 4-digit PIN");
+    return;
+  }
+
+  let users = JSON.parse(localStorage.getItem(USERS_KEY) || "{}");
+
+  if (users[u]) {
+    if (users[u] !== p) {
+      alert("Wrong PIN");
+      return;
+    }
+  } else {
+    users[u] = p; // auto-register
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  }
+
+  localStorage.setItem(SESSION_KEY, u);
+  showApp();
+}
+
+function logout() {
+  localStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
+function showApp() {
+  const user = localStorage.getItem(SESSION_KEY);
+  if (!user) return;
+
+  loginScreen.style.display = "none";
+  appScreen.style.display = "flex";
+  userLabel.innerText = "Logged in as: " + user;
+}
+
+// auto-check session
+showApp();
+</script>
+
 </body>
 </html>
-
