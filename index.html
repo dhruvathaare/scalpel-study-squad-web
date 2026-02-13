@@ -1,191 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Scalpel Study Squad</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap" rel="stylesheet">
 
-<!-- ================= THEME STYLES ================= -->
 <style>
-/* ---------- THEME VARIABLES ---------- */
 :root {
-  --bg: #0e1621;
-  --card: #17212b;
-  --text: #ffffff;
-  --border: #2b5278;
-  --accent: #5288c1;
+  --bg:#0e1621;
+  --card:#17212b;
+  --text:#ffffff;
+  --border:#2b5278;
+  --accent:#5288c1;
 }
-
 [data-theme="light"] {
-  --bg: #f4f6f8;
-  --card: #ffffff;
-  --text: #111111;
-  --border: #d0d7de;
-  --accent: #1f6feb;
+  --bg:#f4f6f8;
+  --card:#ffffff;
+  --text:#111;
+  --border:#d0d7de;
+  --accent:#1f6feb;
 }
-
-/* ---------- BASE ---------- */
-html, body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+html,body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 }
-
-.center {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.center{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
-
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 25px;
-  width: 100%;
-  max-width: 340px;
-  box-sizing: border-box;
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:25px;
+  width:100%;
+  max-width:340px;
+  text-align:center;
 }
-
-input, button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 14px;
+input,button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--bg);
+  color:var(--text);
+  font-size:14px;
 }
-
-button {
-  background: var(--accent);
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
+button{
+  background:var(--accent);
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
 }
-
-button.secondary {
-  background: transparent;
-  border: 1px solid var(--border);
+button.secondary{
+  background:transparent;
 }
-
-.small {
-  font-size: 11px;
-  color: gray;
-  text-align: center;
-  margin-top: 8px;
+.small{
+  font-size:11px;
+  color:gray;
 }
 </style>
-
-<!-- ============== CLOUD READY (NOT ACTIVE YET) ============== -->
-<script type="module">
-  /*
-    Firebase will be enabled later.
-    This is ONLY to make the app cloud-ready.
-    Do not touch for now.
-  */
-  window.CLOUD_READY = true;
-</script>
 </head>
 
 <body data-theme="dark">
 
-<!-- ================= LOGIN SCREEN ================= -->
+<!-- LOGIN -->
 <div id="loginScreen" class="center">
-  <div class="card" style="text-align:center">
-    <h2 style="color:var(--accent);margin-top:0">Scalpel Study Squad</h2>
-
+  <div class="card">
+    <h2 style="color:var(--accent)">Scalpel Study Squad</h2>
     <input id="username" placeholder="Username">
     <input id="pin" type="password" maxlength="4" placeholder="4-digit PIN">
-
     <button onclick="login()">Login / Register</button>
-
-    <button class="secondary" onclick="toggleTheme()">Toggle Light / Dark</button>
-
-    <p class="small">New username = auto registration</p>
+    <button class="secondary" onclick="toggleTheme()">Toggle Theme</button>
+    <p class="small">Username + PIN stored securely in cloud</p>
   </div>
 </div>
 
-<!-- ================= APP SCREEN ================= -->
+<!-- APP -->
 <div id="appScreen" class="center" style="display:none">
-  <div class="card" style="text-align:center">
-    <h2 style="color:var(--accent);margin-top:0">Welcome</h2>
+  <div class="card">
+    <h2 style="color:var(--accent)">Dashboard</h2>
     <p id="userLabel"></p>
 
-    <button onclick="toggleTheme()">Toggle Light / Dark</button>
-    <button style="background:#ef5350;margin-top:12px" onclick="logout()">Logout</button>
+    <input id="note" placeholder="Write something (cloud saved)">
+    <button onclick="saveNote()">Save to Cloud</button>
 
-    <p class="small">Cloud storage ready ✔</p>
+    <button class="secondary" onclick="toggleTheme()">Toggle Theme</button>
+    <button style="background:#ef5350" onclick="logout()">Logout</button>
   </div>
 </div>
 
-<script>
-/* ================= THEME LOGIC ================= */
-const THEME_KEY = "SSS_THEME";
+<!-- FIREBASE + APP LOGIC -->
+<script type="module">
+/* ================= FIREBASE ================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-function applyTheme(theme) {
-  document.body.setAttribute("data-theme", theme);
-  localStorage.setItem(THEME_KEY, theme);
+const firebaseConfig = {
+  apiKey: "AIzaSyBeR57MpnBVKmlyft0TTkgRj8JbuFbFJ6I",
+  authDomain: "scalpel-study-squad.firebaseapp.com",
+  projectId: "scalpel-study-squad",
+  storageBucket: "scalpel-study-squad.firebasestorage.app",
+  messagingSenderId: "1071073098199",
+  appId: "1:1071073098199:web:58d106ac87debe9b097392"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ================= THEME ================= */
+const THEME_KEY="SSS_THEME";
+function toggleTheme(){
+  const t=document.body.getAttribute("data-theme")==="dark"?"light":"dark";
+  document.body.setAttribute("data-theme",t);
+  localStorage.setItem(THEME_KEY,t);
 }
+document.body.setAttribute("data-theme",localStorage.getItem(THEME_KEY)||"dark");
 
-function toggleTheme() {
-  const current = document.body.getAttribute("data-theme");
-  applyTheme(current === "dark" ? "light" : "dark");
-}
+/* ================= AUTH ================= */
+window.login = async function(){
+  const u=username.value.trim();
+  const p=pin.value.trim();
+  if(!u||p.length!==4||isNaN(p)){alert("Enter username + 4-digit PIN");return;}
 
-// load saved theme
-applyTheme(localStorage.getItem(THEME_KEY) || "dark");
-
-/* ================= AUTH (LOCAL FOR NOW) ================= */
-const USERS_KEY = "SSS_USERS";
-const SESSION_KEY = "SSS_SESSION";
-
-function login() {
-  const u = username.value.trim();
-  const p = pin.value.trim();
-
-  if (!u || p.length !== 4 || isNaN(p)) {
-    alert("Enter username and 4-digit PIN");
-    return;
+  const email=u+"@sss.app";
+  try{
+    await signInWithEmailAndPassword(auth,email,p);
+  }catch{
+    await createUserWithEmailAndPassword(auth,email,p);
   }
+}
 
-  let users = JSON.parse(localStorage.getItem(USERS_KEY) || "{}");
+window.logout = async function(){
+  await signOut(auth);
+}
 
-  if (users[u]) {
-    if (users[u] !== p) {
-      alert("Wrong PIN");
-      return;
-    }
-  } else {
-    users[u] = p; // auto-register
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+onAuthStateChanged(auth,user=>{
+  if(user){
+    loginScreen.style.display="none";
+    appScreen.style.display="flex";
+    userLabel.innerText="Logged in as "+user.email.replace("@sss.app","");
+  }else{
+    loginScreen.style.display="flex";
+    appScreen.style.display="none";
   }
+});
 
-  localStorage.setItem(SESSION_KEY, u);
-  showApp();
+/* ================= CLOUD DATA ================= */
+window.saveNote = async function(){
+  const user=auth.currentUser;
+  if(!user)return;
+  await setDoc(doc(db,"users",user.uid),{
+    note:note.value,
+    updated:Date.now()
+  });
+  alert("Saved to cloud ✔");
 }
-
-function logout() {
-  localStorage.removeItem(SESSION_KEY);
-  location.reload();
-}
-
-function showApp() {
-  const user = localStorage.getItem(SESSION_KEY);
-  if (!user) return;
-
-  loginScreen.style.display = "none";
-  appScreen.style.display = "flex";
-  userLabel.innerText = "Logged in as: " + user;
-}
-
-// auto-check session
-showApp();
 </script>
 
 </body>
