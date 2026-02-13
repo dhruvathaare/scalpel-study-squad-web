@@ -1,171 +1,1337 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Scalpel Study Squad</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap" rel="stylesheet">
-
-<style>
-:root {
-  --bg:#0e1621;
-  --card:#17212b;
-  --text:#ffffff;
-  --border:#2b5278;
-  --accent:#5288c1;
-}
-[data-theme="light"] {
-  --bg:#f4f6f8;
-  --card:#ffffff;
-  --text:#111;
-  --border:#d0d7de;
-  --accent:#1f6feb;
-}
-html,body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-}
-.center{
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:18px;
-  padding:25px;
-  width:100%;
-  max-width:340px;
-  text-align:center;
-}
-input,button{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:var(--bg);
-  color:var(--text);
-  font-size:14px;
-}
-button{
-  background:var(--accent);
-  border:none;
-  font-weight:bold;
-  cursor:pointer;
-}
-button.secondary{
-  background:transparent;
-}
-.small{
-  font-size:11px;
-  color:gray;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scalpel Study Squad</title>
+    
+    <!-- Firebase SDK - Using compat version for easier implementation -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        /* Auth Container */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .auth-box {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 100%;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #667eea;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #f9f9f9;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+            border-left: 4px solid #c33;
+        }
+        
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+            border-left: 4px solid #3c3;
+        }
+        
+        .switch-form {
+            text-align: center;
+            margin-top: 25px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .switch-form a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .switch-form a:hover {
+            color: #764ba2;
+        }
+        
+        /* App Container */
+        .app-container {
+            display: none;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .app-header {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .app-header h2 {
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .logout-btn {
+            padding: 10px 20px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .logout-btn:hover {
+            background: #d32f2f;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .timer-display {
+            font-size: 48px;
+            text-align: center;
+            color: #667eea;
+            font-weight: bold;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-start {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .btn-pause {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .btn-stop {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        table th,
+        table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        table th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-left: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            overflow-x: auto;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab:hover {
+            color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .consistency-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #ffd700;
+            color: #333;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        
+        @media (max-width: 768px) {
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .timer-display {
+                font-size: 36px;
+            }
+            
+            .app-header {
+                text-align: center;
+            }
+            
+            .app-header h2 {
+                font-size: 20px;
+            }
+            
+            .user-info {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
+<body>
+    <!-- Auth Screen -->
+    <div id="authScreen" class="auth-container">
+        <div class="auth-box">
+            <div class="logo">
+                <img src="https://github.com/dhruvathaare/Scaslpel-Study-Squad-Apps/blob/main/photo_2026-02-12_20-08-36.jpg?raw=true" alt="Logo">
+            </div>
+            
+            <h1>Scalpel Study Squad</h1>
+            <p class="subtitle">Track your medical exam preparation</p>
+            
+            <div class="error" id="authError"></div>
+            <div class="success" id="authSuccess"></div>
+            
+            <!-- Login Form -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required placeholder="your.email@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required placeholder="Enter your password">
+                </div>
+                
+                <button type="submit" class="btn" id="loginBtn">
+                    <span id="loginBtnText">Login</span>
+                </button>
+            </form>
+            
+            <!-- Register Form -->
+            <form id="registerForm" class="hidden">
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" required placeholder="your.email@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" required placeholder="At least 6 characters">
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerConfirmPassword">Confirm Password</label>
+                    <input type="password" id="registerConfirmPassword" required placeholder="Confirm your password">
+                </div>
+                
+                <button type="submit" class="btn" id="registerBtn">
+                    <span id="registerBtnText">Create Account</span>
+                </button>
+            </form>
+            
+            <div class="switch-form">
+                <span id="switchText">Don't have an account?</span>
+                <a id="switchLink">Register here</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main App Screen -->
+    <div id="appScreen" class="app-container">
+        <div class="app-header">
+            <h2>
+                <span>🩺</span>
+                <span>Scalpel Study Squad</span>
+            </h2>
+            <div class="user-info">
+                <span class="consistency-badge" id="consistencyDisplay">🔥 0 Days</span>
+                <span id="userEmail"></span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('tracker')">📚 Study Tracker</button>
+            <button class="tab" onclick="switchTab('swt')">📊 SWT Analysis</button>
+            <button class="tab" onclick="switchTab('gt')">🎯 GT Intelligence</button>
+            <button class="tab" onclick="switchTab('history')">📅 History</button>
+        </div>
+        
+        <!-- Study Tracker Tab -->
+        <div id="trackerTab" class="tab-content active">
+            <div class="card">
+                <h3>Study Session</h3>
+                
+                <div class="form-group">
+                    <label for="subjectSelect">Subject</label>
+                    <select id="subjectSelect">
+                        <option value="">Select Subject</option>
+                        <option value="Anatomy">Anatomy</option>
+                        <option value="Physiology">Physiology</option>
+                        <option value="Biochemistry">Biochemistry</option>
+                        <option value="Pathology">Pathology</option>
+                        <option value="Microbiology">Microbiology</option>
+                        <option value="Pharmacology">Pharmacology</option>
+                        <option value="FMT">FMT</option>
+                        <option value="PSM">PSM</option>
+                        <option value="Ophthalmology">Ophthalmology</option>
+                        <option value="ENT">ENT</option>
+                        <option value="Medicine">Medicine</option>
+                        <option value="Surgery">Surgery</option>
+                        <option value="OBG">OBG</option>
+                        <option value="Pediatrics">Pediatrics</option>
+                        <option value="Anaesthesia">Anaesthesia</option>
+                        <option value="Dermatology">Dermatology</option>
+                        <option value="Orthopedics">Orthopedics</option>
+                        <option value="Psychiatry">Psychiatry</option>
+                        <option value="Radiology">Radiology</option>
+                        <option value="Mixed Bag">Mixed Bag</option>
+                    </select>
+                </div>
+                
+                <div class="timer-display" id="timerDisplay">00:00:00</div>
+                
+                <div class="controls">
+                    <button class="control-btn btn-start" onclick="startSession()">▶ Start Session</button>
+                    <button class="control-btn btn-pause hidden" id="pauseBtn" onclick="pauseSession()">⏸ Pause</button>
+                    <button class="control-btn btn-stop hidden" id="stopBtn" onclick="stopSession()">⏹ End Session</button>
+                </div>
+                
+                <div class="form-group" style="margin-top: 20px;">
+                    <label for="mcqCount">MCQs Solved Today</label>
+                    <input type="number" id="mcqCount" min="0" value="0" placeholder="Enter MCQs solved">
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Today's Stats</h3>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-number" id="todayHours">0</div>
+                        <div class="stat-label">Hours</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="todayCycles">0</div>
+                        <div class="stat-label">Cycles</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="todayMCQs">0</div>
+                        <div class="stat-label">MCQs</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="todaySubjects">0</div>
+                        <div class="stat-label">Subjects</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SWT Analysis Tab -->
+        <div id="swtTab" class="tab-content">
+            <div class="card">
+                <h3>Subject-Wise Test</h3>
+                
+                <div class="form-group">
+                    <label for="swtSubject">Subject</label>
+                    <select id="swtSubject">
+                        <option value="">Select Subject</option>
+                        <option value="Anatomy">Anatomy</option>
+                        <option value="Physiology">Physiology</option>
+                        <option value="Biochemistry">Biochemistry</option>
+                        <option value="Pathology">Pathology</option>
+                        <option value="Microbiology">Microbiology</option>
+                        <option value="Pharmacology">Pharmacology</option>
+                        <option value="Medicine">Medicine</option>
+                        <option value="Surgery">Surgery</option>
+                        <option value="OBG">OBG</option>
+                        <option value="Pediatrics">Pediatrics</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <div class="form-group">
+                        <label for="swtTotal">Total Questions</label>
+                        <input type="number" id="swtTotal" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="swtCorrect">Correct</label>
+                        <input type="number" id="swtCorrect" min="0" value="0">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <div class="form-group">
+                        <label for="swtUnattempted">Unattempted</label>
+                        <input type="number" id="swtUnattempted" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="swtWrong">Wrong</label>
+                        <input type="number" id="swtWrong" min="0" value="0">
+                    </div>
+                </div>
+                
+                <button class="control-btn btn-primary" onclick="saveSWT()">Save SWT Result</button>
+            </div>
+            
+            <div class="card">
+                <h3>SWT History</h3>
+                <div style="overflow-x: auto;">
+                    <table id="swtTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Subject</th>
+                                <th>Total</th>
+                                <th>Correct</th>
+                                <th>Accuracy</th>
+                            </tr>
+                        </thead>
+                        <tbody id="swtTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #999;">No data yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- GT Intelligence Tab -->
+        <div id="gtTab" class="tab-content">
+            <div class="card">
+                <h3>Grand Test</h3>
+                
+                <div class="form-group">
+                    <label for="gtExamType">Exam Type</label>
+                    <select id="gtExamType">
+                        <option value="NEET PG">NEET PG (+4/-1)</option>
+                        <option value="INICET">INICET (+1/-0.33)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <div class="form-group">
+                        <label for="gtCorrect">Correct</label>
+                        <input type="number" id="gtCorrect" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="gtUnattempted">Unattempted</label>
+                        <input type="number" id="gtUnattempted" min="0" value="0">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gtWrong">Wrong</label>
+                    <input type="number" id="gtWrong" min="0" value="0">
+                </div>
+                
+                <div class="stat-box" style="margin: 20px 0;">
+                    <div class="stat-label">Calculated Score</div>
+                    <div class="stat-number" id="gtScore">0</div>
+                </div>
+                
+                <button class="control-btn btn-primary" onclick="saveGT()">Save GT Result</button>
+            </div>
+            
+            <div class="card">
+                <h3>GT History</h3>
+                <div style="overflow-x: auto;">
+                    <table id="gtTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Exam</th>
+                                <th>Correct</th>
+                                <th>Wrong</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gtTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #999;">No data yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- History Tab -->
+        <div id="historyTab" class="tab-content">
+            <div class="card">
+                <h3>Study History</h3>
+                <div style="overflow-x: auto;">
+                    <table id="historyTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Hours</th>
+                                <th>Cycles</th>
+                                <th>MCQs</th>
+                                <th>Subjects</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #999;">No data yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<body data-theme="dark">
-
-<!-- LOGIN -->
-<div id="loginScreen" class="center">
-  <div class="card">
-    <h2 style="color:var(--accent)">Scalpel Study Squad</h2>
-    <input id="username" placeholder="Username">
-    <input id="pin" type="password" maxlength="4" placeholder="4-digit PIN">
-    <button onclick="login()">Login / Register</button>
-    <button class="secondary" onclick="toggleTheme()">Toggle Theme</button>
-    <p class="small">Username + PIN stored securely in cloud</p>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="appScreen" class="center" style="display:none">
-  <div class="card">
-    <h2 style="color:var(--accent)">Dashboard</h2>
-    <p id="userLabel"></p>
-
-    <input id="note" placeholder="Write something (cloud saved)">
-    <button onclick="saveNote()">Save to Cloud</button>
-
-    <button class="secondary" onclick="toggleTheme()">Toggle Theme</button>
-    <button style="background:#ef5350" onclick="logout()">Logout</button>
-  </div>
-</div>
-
-<!-- FIREBASE + APP LOGIC -->
-<script type="module">
-/* ================= FIREBASE ================= */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBeR57MpnBVKmlyft0TTkgRj8JbuFbFJ6I",
-  authDomain: "scalpel-study-squad.firebaseapp.com",
-  projectId: "scalpel-study-squad",
-  storageBucket: "scalpel-study-squad.firebasestorage.app",
-  messagingSenderId: "1071073098199",
-  appId: "1:1071073098199:web:58d106ac87debe9b097392"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-/* ================= THEME ================= */
-const THEME_KEY="SSS_THEME";
-function toggleTheme(){
-  const t=document.body.getAttribute("data-theme")==="dark"?"light":"dark";
-  document.body.setAttribute("data-theme",t);
-  localStorage.setItem(THEME_KEY,t);
-}
-document.body.setAttribute("data-theme",localStorage.getItem(THEME_KEY)||"dark");
-
-/* ================= AUTH ================= */
-window.login = async function(){
-  const u=username.value.trim();
-  const p=pin.value.trim();
-  if(!u||p.length!==4||isNaN(p)){alert("Enter username + 4-digit PIN");return;}
-
-  const email=u+"@sss.app";
-  try{
-    await signInWithEmailAndPassword(auth,email,p);
-  }catch{
-    await createUserWithEmailAndPassword(auth,email,p);
-  }
-}
-
-window.logout = async function(){
-  await signOut(auth);
-}
-
-onAuthStateChanged(auth,user=>{
-  if(user){
-    loginScreen.style.display="none";
-    appScreen.style.display="flex";
-    userLabel.innerText="Logged in as "+user.email.replace("@sss.app","");
-  }else{
-    loginScreen.style.display="flex";
-    appScreen.style.display="none";
-  }
-});
-
-/* ================= CLOUD DATA ================= */
-window.saveNote = async function(){
-  const user=auth.currentUser;
-  if(!user)return;
-  await setDoc(doc(db,"users",user.uid),{
-    note:note.value,
-    updated:Date.now()
-  });
-  alert("Saved to cloud ✔");
-}
-</script>
-
+    <script>
+        // ============================================
+        // FIREBASE CONFIGURATION
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeR57MpnBVKmlyft0TTkgRj8JbuFbFJ6I",
+            authDomain: "scalpel-study-squad.firebaseapp.com",
+            projectId: "scalpel-study-squad",
+            storageBucket: "scalpel-study-squad.firebasestorage.app",
+            messagingSenderId: "1071073098199",
+            appId: "1:1071073098199:web:58d106ac87debe9b097392"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        // ============================================
+        // GLOBAL VARIABLES
+        // ============================================
+        let currentUser = null;
+        let timerInterval = null;
+        let timerSeconds = 0;
+        let isPaused = false;
+        let currentSession = {
+            subject: '',
+            startTime: null,
+            totalSeconds: 0,
+            cycles: 0
+        };
+        let todayData = {
+            hours: 0,
+            cycles: 0,
+            mcqs: 0,
+            subjects: new Set()
+        };
+        
+        // ============================================
+        // AUTH FUNCTIONS
+        // ============================================
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('authError');
+            const successDiv = document.getElementById('authSuccess');
+            successDiv.style.display = 'none';
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 5000);
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('authSuccess');
+            const errorDiv = document.getElementById('authError');
+            errorDiv.style.display = 'none';
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+        
+        function setLoading(formId, isLoading) {
+            const btn = document.getElementById(formId === 'loginForm' ? 'loginBtn' : 'registerBtn');
+            const btnText = document.getElementById(formId === 'loginForm' ? 'loginBtnText' : 'registerBtnText');
+            
+            if (isLoading) {
+                btn.disabled = true;
+                btnText.innerHTML = (formId === 'loginForm' ? 'Logging in' : 'Creating account') + '<span class="loading"></span>';
+            } else {
+                btn.disabled = false;
+                btnText.textContent = formId === 'loginForm' ? 'Login' : 'Create Account';
+            }
+        }
+        
+        // Switch between login and register
+        document.getElementById('switchLink').addEventListener('click', function() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const switchText = document.getElementById('switchText');
+            const switchLink = document.getElementById('switchLink');
+            
+            if (loginForm.classList.contains('hidden')) {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                switchText.textContent = "Don't have an account?";
+                switchLink.textContent = "Register here";
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                switchText.textContent = "Already have an account?";
+                switchLink.textContent = "Login here";
+            }
+        });
+        
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            setLoading('loginForm', true);
+            
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                showSuccess('Login successful!');
+            } catch (error) {
+                showError(error.message);
+                setLoading('loginForm', false);
+            }
+        });
+        
+        // Register
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+            
+            setLoading('registerForm', true);
+            
+            try {
+                const result = await auth.createUserWithEmailAndPassword(email, password);
+                // Initialize user data in Firestore
+                await db.collection('users').doc(result.user.uid).set({
+                    email: email,
+                    consistency: 0,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                showSuccess('Account created successfully!');
+            } catch (error) {
+                showError(error.message);
+                setLoading('registerForm', false);
+            }
+        });
+        
+        // Logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                auth.signOut();
+            }
+        }
+        
+        // Auth state observer
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('appScreen').style.display = 'block';
+                document.getElementById('userEmail').textContent = user.email;
+                
+                // Load user data
+                await loadUserData();
+                await loadTodayData();
+            } else {
+                currentUser = null;
+                document.getElementById('authScreen').style.display = 'flex';
+                document.getElementById('appScreen').style.display = 'none';
+            }
+        });
+        
+        // ============================================
+        // DATA FUNCTIONS
+        // ============================================
+        
+        async function loadUserData() {
+            try {
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                if (userDoc.exists) {
+                    const data = userDoc.data();
+                    document.getElementById('consistencyDisplay').textContent = `🔥 ${data.consistency || 0} Days`;
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+        
+        async function loadTodayData() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            try {
+                // Load study sessions
+                const sessionsSnapshot = await db.collection('sessions')
+                    .where('userId', '==', currentUser.uid)
+                    .where('date', '==', today)
+                    .get();
+                
+                todayData = {
+                    hours: 0,
+                    cycles: 0,
+                    mcqs: 0,
+                    subjects: new Set()
+                };
+                
+                sessionsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    todayData.hours += data.hours || 0;
+                    todayData.cycles += data.cycles || 0;
+                    todayData.mcqs += data.mcqs || 0;
+                    if (data.subject) todayData.subjects.add(data.subject);
+                });
+                
+                updateTodayStats();
+                
+                // Load history
+                await loadHistory();
+                await loadSWTHistory();
+                await loadGTHistory();
+            } catch (error) {
+                console.error('Error loading today data:', error);
+            }
+        }
+        
+        function updateTodayStats() {
+            document.getElementById('todayHours').textContent = todayData.hours.toFixed(1);
+            document.getElementById('todayCycles').textContent = todayData.cycles;
+            document.getElementById('todayMCQs').textContent = todayData.mcqs;
+            document.getElementById('todaySubjects').textContent = todayData.subjects.size;
+        }
+        
+        // ============================================
+        // TIMER FUNCTIONS
+        // ============================================
+        
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+        
+        function startSession() {
+            const subject = document.getElementById('subjectSelect').value;
+            
+            if (!subject) {
+                alert('Please select a subject first');
+                return;
+            }
+            
+            currentSession.subject = subject;
+            currentSession.startTime = new Date();
+            timerSeconds = 0;
+            isPaused = false;
+            
+            document.querySelector('.btn-start').classList.add('hidden');
+            document.getElementById('pauseBtn').classList.remove('hidden');
+            document.getElementById('stopBtn').classList.remove('hidden');
+            document.getElementById('subjectSelect').disabled = true;
+            
+            timerInterval = setInterval(() => {
+                if (!isPaused) {
+                    timerSeconds++;
+                    document.getElementById('timerDisplay').textContent = formatTime(timerSeconds);
+                }
+            }, 1000);
+        }
+        
+        function pauseSession() {
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').textContent = isPaused ? '▶ Resume' : '⏸ Pause';
+        }
+        
+        async function stopSession() {
+            if (!confirm('End this study session?')) return;
+            
+            clearInterval(timerInterval);
+            
+            const hours = timerSeconds / 3600;
+            const cycles = Math.floor(timerSeconds / 1500); // 25 min cycles
+            const mcqs = parseInt(document.getElementById('mcqCount').value) || 0;
+            
+            // Save session to Firestore
+            try {
+                await db.collection('sessions').add({
+                    userId: currentUser.uid,
+                    date: new Date().toISOString().split('T')[0],
+                    subject: currentSession.subject,
+                    hours: hours,
+                    cycles: cycles,
+                    mcqs: mcqs,
+                    seconds: timerSeconds,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Update today's data
+                todayData.hours += hours;
+                todayData.cycles += cycles;
+                todayData.mcqs += mcqs;
+                todayData.subjects.add(currentSession.subject);
+                
+                updateTodayStats();
+                await loadHistory();
+                
+                alert('Session saved successfully!');
+            } catch (error) {
+                alert('Error saving session: ' + error.message);
+            }
+            
+            // Reset
+            timerSeconds = 0;
+            document.getElementById('timerDisplay').textContent = '00:00:00';
+            document.querySelector('.btn-start').classList.remove('hidden');
+            document.getElementById('pauseBtn').classList.add('hidden');
+            document.getElementById('stopBtn').classList.add('hidden');
+            document.getElementById('subjectSelect').disabled = false;
+            document.getElementById('mcqCount').value = 0;
+        }
+        
+        // ============================================
+        // SWT FUNCTIONS
+        // ============================================
+        
+        async function saveSWT() {
+            const subject = document.getElementById('swtSubject').value;
+            const total = parseInt(document.getElementById('swtTotal').value) || 0;
+            const correct = parseInt(document.getElementById('swtCorrect').value) || 0;
+            const unattempted = parseInt(document.getElementById('swtUnattempted').value) || 0;
+            const wrong = parseInt(document.getElementById('swtWrong').value) || 0;
+            
+            if (!subject) {
+                alert('Please select a subject');
+                return;
+            }
+            
+            if (total === 0) {
+                alert('Please enter total questions');
+                return;
+            }
+            
+            const accuracy = total > 0 ? ((correct / total) * 100).toFixed(1) : 0;
+            
+            try {
+                await db.collection('swt').add({
+                    userId: currentUser.uid,
+                    date: new Date().toISOString().split('T')[0],
+                    subject: subject,
+                    total: total,
+                    correct: correct,
+                    unattempted: unattempted,
+                    wrong: wrong,
+                    accuracy: parseFloat(accuracy),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                alert('SWT result saved successfully!');
+                
+                // Reset form
+                document.getElementById('swtTotal').value = 0;
+                document.getElementById('swtCorrect').value = 0;
+                document.getElementById('swtUnattempted').value = 0;
+                document.getElementById('swtWrong').value = 0;
+                
+                await loadSWTHistory();
+            } catch (error) {
+                alert('Error saving SWT: ' + error.message);
+            }
+        }
+        
+        async function loadSWTHistory() {
+            try {
+                const snapshot = await db.collection('swt')
+                    .where('userId', '==', currentUser.uid)
+                    .orderBy('timestamp', 'desc')
+                    .limit(20)
+                    .get();
+                
+                const tbody = document.getElementById('swtTableBody');
+                tbody.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No data yet</td></tr>';
+                    return;
+                }
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${data.date}</td>
+                        <td>${data.subject}</td>
+                        <td>${data.total}</td>
+                        <td>${data.correct}</td>
+                        <td>${data.accuracy}%</td>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading SWT history:', error);
+            }
+        }
+        
+        // ============================================
+        // GT FUNCTIONS
+        // ============================================
+        
+        // Auto-calculate GT score
+        document.getElementById('gtCorrect').addEventListener('input', calculateGTScore);
+        document.getElementById('gtWrong').addEventListener('input', calculateGTScore);
+        document.getElementById('gtExamType').addEventListener('change', calculateGTScore);
+        
+        function calculateGTScore() {
+            const examType = document.getElementById('gtExamType').value;
+            const correct = parseInt(document.getElementById('gtCorrect').value) || 0;
+            const wrong = parseInt(document.getElementById('gtWrong').value) || 0;
+            
+            let score = 0;
+            
+            if (examType === 'NEET PG') {
+                score = (correct * 4) - (wrong * 1);
+            } else if (examType === 'INICET') {
+                score = (correct * 1) - (wrong * 0.33);
+            }
+            
+            document.getElementById('gtScore').textContent = score.toFixed(2);
+        }
+        
+        async function saveGT() {
+            const examType = document.getElementById('gtExamType').value;
+            const correct = parseInt(document.getElementById('gtCorrect').value) || 0;
+            const unattempted = parseInt(document.getElementById('gtUnattempted').value) || 0;
+            const wrong = parseInt(document.getElementById('gtWrong').value) || 0;
+            const score = parseFloat(document.getElementById('gtScore').textContent);
+            
+            try {
+                await db.collection('gt').add({
+                    userId: currentUser.uid,
+                    date: new Date().toISOString().split('T')[0],
+                    examType: examType,
+                    correct: correct,
+                    unattempted: unattempted,
+                    wrong: wrong,
+                    score: score,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                alert('GT result saved successfully!');
+                
+                // Reset form
+                document.getElementById('gtCorrect').value = 0;
+                document.getElementById('gtUnattempted').value = 0;
+                document.getElementById('gtWrong').value = 0;
+                document.getElementById('gtScore').textContent = 0;
+                
+                await loadGTHistory();
+            } catch (error) {
+                alert('Error saving GT: ' + error.message);
+            }
+        }
+        
+        async function loadGTHistory() {
+            try {
+                const snapshot = await db.collection('gt')
+                    .where('userId', '==', currentUser.uid)
+                    .orderBy('timestamp', 'desc')
+                    .limit(20)
+                    .get();
+                
+                const tbody = document.getElementById('gtTableBody');
+                tbody.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No data yet</td></tr>';
+                    return;
+                }
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${data.date}</td>
+                        <td>${data.examType}</td>
+                        <td>${data.correct}</td>
+                        <td>${data.wrong}</td>
+                        <td>${data.score.toFixed(2)}</td>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading GT history:', error);
+            }
+        }
+        
+        // ============================================
+        // HISTORY FUNCTIONS
+        // ============================================
+        
+        async function loadHistory() {
+            try {
+                const snapshot = await db.collection('sessions')
+                    .where('userId', '==', currentUser.uid)
+                    .orderBy('timestamp', 'desc')
+                    .limit(30)
+                    .get();
+                
+                const tbody = document.getElementById('historyTableBody');
+                tbody.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No data yet</td></tr>';
+                    return;
+                }
+                
+                // Group by date
+                const dateMap = new Map();
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (!dateMap.has(data.date)) {
+                        dateMap.set(data.date, {
+                            hours: 0,
+                            cycles: 0,
+                            mcqs: 0,
+                            subjects: new Set()
+                        });
+                    }
+                    
+                    const dateData = dateMap.get(data.date);
+                    dateData.hours += data.hours || 0;
+                    dateData.cycles += data.cycles || 0;
+                    dateData.mcqs += data.mcqs || 0;
+                    if (data.subject) dateData.subjects.add(data.subject);
+                });
+                
+                // Sort by date (newest first)
+                const sortedDates = Array.from(dateMap.keys()).sort().reverse();
+                
+                sortedDates.forEach(date => {
+                    const data = dateMap.get(date);
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${date}</td>
+                        <td>${data.hours.toFixed(1)}</td>
+                        <td>${data.cycles}</td>
+                        <td>${data.mcqs}</td>
+                        <td>${Array.from(data.subjects).join(', ') || '-'}</td>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+        
+        // ============================================
+        // TAB FUNCTIONS
+        // ============================================
+        
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active from all tab buttons
+            document.querySelectorAll('.tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // Mark button as active
+            event.target.classList.add('active');
+        }
+    </script>
 </body>
 </html>
